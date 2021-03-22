@@ -10,9 +10,9 @@ function doGet(url) {
     });
 }
 
-function doPost(pUrl, pBody = {}) {
+function doPost(pUrl, pBody = {}, baseUrl = '/wildapp/api') {
     return new Promise((resolve, reject) => {
-        fetch('/wildapp/api' + pUrl, {
+        fetch(baseUrl + pUrl, {
             method: 'POST',
             cache: 'no-cache',
             headers: {'Content-Type': 'application/json'},

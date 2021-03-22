@@ -1,23 +1,24 @@
 package blog.ricardocampos.controllers;
 
 import blog.ricardocampos.repository.service.AuthService;
-import blog.ricardocampos.repository.service.UserService;
 import blog.ricardocampos.security.AuthenticationResponse;
 import blog.ricardocampos.security.LoginCredentials;
 import blog.ricardocampos.security.MyToken;
 import blog.ricardocampos.security.User;
 
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.logging.Logger;
 
 @Path("/")
@@ -62,5 +63,35 @@ public class LoginController {
         return Response.status(Response.Status.UNAUTHORIZED).entity("{\"mensagem\": \"" + mensagemErro + "\"}")
                 .type(MediaType.APPLICATION_JSON_TYPE).build();
 
+    }
+
+    @POST
+    @Path("/logout")
+    public Response logout() {
+        NewCookie[] newCookies = null;
+        Cookie[] cookies = httpServletRequest.getCookies();
+        if (cookies != null) {
+            newCookies = new NewCookie[cookies.length];
+            LocalDateTime localDateTime = LocalDateTime.now().minusMonths(7);
+            Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+
+            for (int i=0; i<cookies.length; i++) {
+                Cookie cookie = cookies[i];
+                newCookies[i] = new NewCookie(
+                        cookie.getName(),
+                        cookie.getValue(),
+                        httpServletRequest.getContextPath(),
+                        null,
+                        cookie.getVersion(),
+                        cookie.getComment(),
+                        0,
+                        Date.from(instant),
+                        cookie.getSecure(),
+                        cookie.isHttpOnly()
+                );
+            }
+        }
+
+        return Response.ok().cookie(newCookies).build();
     }
 }

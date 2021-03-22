@@ -50,8 +50,8 @@ public class MyToken {
     public static NewCookie criarTokenCookie(HttpServletRequest httpServletRequest, User user) {
         String path = httpServletRequest.getContextPath();
         ParametrosGerarJwt params = new ParametrosGerarJwt(user);
-        params.setExpiration(LocalDateTime.now()); // todo: add 2 horas
-        params.setNotBefore(LocalDateTime.now()); // todo: substrair 1 hora
+        params.setExpiration(LocalDateTime.now().plusHours(2));
+        params.setNotBefore(LocalDateTime.now().plusHours(-1));
         params.setChave(CHAVE_JWT);
         String token = Jwt.gerar(params);
         return new NewCookie(COOKIE_NAME, token, path, null, null, NewCookie.DEFAULT_MAX_AGE, false);
