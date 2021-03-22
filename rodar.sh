@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WILDFLY_HOME=/home/ricardo/Projetos-Ricardo/wildfly-15.0.0.Final
+WILDFLY_HOME=/home/ricardo/Projects/wildfly-15.0.1.Final
 
 if [ ! -d $WILDFLY_HOME ]; then
   echo 'Wildfly home directory not found!'

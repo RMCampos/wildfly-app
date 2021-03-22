@@ -12,7 +12,7 @@ import javax.ws.rs.core.MediaType;
 @Path("/user")
 @Stateless
 @LocalBean
-public class MainController {
+public class UserController {
 
     @GET
     @Path("/get-user-test")
