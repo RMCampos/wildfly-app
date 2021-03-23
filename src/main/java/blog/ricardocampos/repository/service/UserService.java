@@ -1,24 +1,21 @@
 package blog.ricardocampos.repository.service;
 
-import blog.ricardocampos.vo.User;
+import blog.ricardocampos.vo.UserLogin;
 
 import javax.ejb.Stateless;
 
 @Stateless
 public class UserService {
 
-    public User findByEmail(String email) {
+    public UserLogin findByEmail(String email) {
         if (!email.equals("ricardo@ricardocampos.blog")) {
             return null;
         }
 
-        User user = new User();
-        user.setId(1);
-        user.setEmail(email);
-        user.setPassword("123456");
-        user.setNome("Ricardo");
-        user.setSobrenome("Campos");
+        UserLogin userLogin = new UserLogin();
+        userLogin.setEmail(email);
+        userLogin.setPassword("123456");
 
-        return user;
+        return userLogin;
     }
 }

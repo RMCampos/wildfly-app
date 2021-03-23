@@ -482,7 +482,6 @@
                 <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" enable-http2="true"/>
                 <host name="default-host" alias="localhost">
                     <location name="/" handler="welcome-content"/>
-                    <location name="/static" handler="static-content" />
                     <http-invoker security-realm="ApplicationRealm"/>
                 </host>
             </server>
@@ -491,7 +490,6 @@
                 <websockets/>
             </servlet-container>
             <handlers>
-                <file name="static-content" path="/home/ricardo/Projetos-Ricardo/wildapp/src/main/webapp" />
                 <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
             </handlers>
         </subsystem>

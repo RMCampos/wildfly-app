@@ -1,48 +1,67 @@
 package blog.ricardocampos.controllers;
 
 import blog.ricardocampos.repository.service.AuthService;
-import blog.ricardocampos.security.AuthenticationResponse;
-import blog.ricardocampos.security.LoginCredentials;
-import blog.ricardocampos.security.MyToken;
 import blog.ricardocampos.security.User;
+import blog.ricardocampos.vo.UserLogin;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 
+import javax.crypto.KeyGenerator;
+import javax.ejb.LocalBean;
+import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
-import java.time.Instant;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.*;
+import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.logging.Logger;
 
-@Path("/")
+@Path("/do-login")
+@LocalBean
+@Stateless
 public class LoginController {
 
     private static final Logger logger = Logger.getLogger(LoginController.class.getName());
 
     @Context
-    HttpServletRequest httpServletRequest;
+    UriInfo uriInfo;
+
+    @Inject
+    KeyGenerator keyGenerator;
 
     @Inject
     AuthService authService;
 
     @POST
     @Path("/try")
-    public Response login(LoginCredentials credentials) {
-        String email = "";
-        String password = "";
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response login(UserLogin userLogin) {
+        try {
+            logger.info("#### email/password : " + userLogin.getEmail() + "/" + userLogin.getPassword());
 
-        User user = MyToken.getUser(httpServletRequest);
-        if (user == null) {
-            email = credentials.getEmail();
-            password = credentials.getPassword();
+            // Authenticate the user using the credentials provided
+            authenticate(userLogin.getEmail(), userLogin.getPassword());
+
+            // Issue a token for the user
+            String token = issueToken(userLogin.getEmail());
+
+            // Return the token on the response
+            return Response.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + token).build();
+        } catch (Exception e) {
+            String mensagemErro = "Usuário ou senha inválidos!";
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("{\"mensagem\": \"" + mensagemErro + "\"}")
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build();
         }
+    }
+
+    private void authenticate(String email, String password) throws Exception {
+        User user = null;
 
         if (email.equals("ricardo@ricardocampos.blog")) {
             if (password.equals("123456")) {
@@ -51,47 +70,31 @@ public class LoginController {
                 user.setNome("Ricardo Campos");
             }
         }
+        /*
+        TypedQuery<User> query = em.createNamedQuery(User.FIND_BY_LOGIN_PASSWORD, User.class);
+        query.setParameter("login", login);
+        query.setParameter("password", PasswordUtils.digestPassword(password));
+        User user = query.getSingleResult();
+         */
 
-        if (user != null) {
-            AuthenticationResponse authenticationResponse = new AuthenticationResponse(user);
-            return Response.ok().cookie(MyToken.criarTokenCookie(httpServletRequest, user))
-                    .entity(authenticationResponse).type(MediaType.APPLICATION_JSON_TYPE).build();
-        }
-
-        String mensagemErro = "Usuário ou senha inválidos!";
-
-        return Response.status(Response.Status.UNAUTHORIZED).entity("{\"mensagem\": \"" + mensagemErro + "\"}")
-                .type(MediaType.APPLICATION_JSON_TYPE).build();
-
+        if (user == null)
+            throw new SecurityException("Invalid user/password");
     }
 
-    @POST
-    @Path("/logout")
-    public Response logout() {
-        NewCookie[] newCookies = null;
-        Cookie[] cookies = httpServletRequest.getCookies();
-        if (cookies != null) {
-            newCookies = new NewCookie[cookies.length];
-            LocalDateTime localDateTime = LocalDateTime.now().minusMonths(7);
-            Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+    private String issueToken(String email) {
+        Key key = keyGenerator.generateKey();
+        String jwtToken = Jwts.builder()
+                .setSubject(email)
+                .setIssuer(uriInfo.getAbsolutePath().toString())
+                .setIssuedAt(new Date())
+                .setExpiration(toDate(LocalDateTime.now().plusMinutes(15L)))
+                .signWith(SignatureAlgorithm.HS512, key)
+                .compact();
+        logger.info("#### generating token for a key : " + jwtToken + " - " + key);
+        return jwtToken;
+    }
 
-            for (int i=0; i<cookies.length; i++) {
-                Cookie cookie = cookies[i];
-                newCookies[i] = new NewCookie(
-                        cookie.getName(),
-                        cookie.getValue(),
-                        httpServletRequest.getContextPath(),
-                        null,
-                        cookie.getVersion(),
-                        cookie.getComment(),
-                        0,
-                        Date.from(instant),
-                        cookie.getSecure(),
-                        cookie.isHttpOnly()
-                );
-            }
-        }
-
-        return Response.ok().cookie(newCookies).build();
+    private Date toDate(LocalDateTime localDateTime) {
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 }
