@@ -49,11 +49,10 @@ public class JwtUtil {
     public Claims decodeToken(String token) {
         try {
             // This line will throw an exception if it is not a signed JWS (as expected)
-            Claims claims = Jwts.parserBuilder()
+            return Jwts.parserBuilder()
                     .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
                     .build()
                     .parseClaimsJws(token).getBody();
-            return claims;
         } catch (MalformedJwtException | SignatureException e) {
             return null;
         }

@@ -10,12 +10,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 @WebFilter(urlPatterns = "/api/*")
 public class AuthFilter implements Filter {
-
-    private final Logger logger = Logger.getLogger(getClass().getName());
 
     @Inject
     JwtUtil jwtUtil;
@@ -41,7 +38,7 @@ public class AuthFilter implements Filter {
             // Extract the token from the HTTP Authorization header
             Claims claims = jwtUtil.decodeToken(authorizationHeader);
             if (claims == null) {
-                logger.severe("#### invalid token!");
+                // TODO: create a failed token cache
                 httpServletResponse.setStatus(401);
                 return;
             }

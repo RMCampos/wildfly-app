@@ -1,5 +1,6 @@
 package blog.ricardocampos.repository.service;
 
+import blog.ricardocampos.repository.entity.UserEntity;
 import blog.ricardocampos.vo.UserLogin;
 
 import javax.ejb.Stateless;
@@ -11,19 +12,18 @@ public class AuthService {
     @Inject
     UserService userService;
 
-    public UserLogin attempt(UserLogin userLogin) {
-        UserLogin userLoginBd = userService.findByEmail(userLogin.getEmail());
-        if (userLoginBd == null) {
-            return new UserLogin();
+    public UserEntity attempt(UserLogin userLogin) {
+        UserEntity userEntity = userService.findByEmail(userLogin.getEmail());
+        if (userEntity == null) {
+            return null;
         }
 
-        // todo: password
-        if (!userLogin.getPassword().equals(userLoginBd.getPassword())) {
-            return new UserLogin();
+        if (!userLogin.getPassword().equals("123456")) {
+            return null;
         }
 
         // register log
 
-        return userLoginBd;
+        return userEntity;
     }
 }
