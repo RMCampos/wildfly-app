@@ -1,6 +1,5 @@
-package blog.ricardocampos.controllers;
+package blog.ricardocampos.controller;
 
-import blog.ricardocampos.filter.JWTTokenNeeded;
 import blog.ricardocampos.repository.entity.ItemEntity;
 
 import javax.ejb.LocalBean;
