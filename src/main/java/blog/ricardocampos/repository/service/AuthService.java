@@ -18,6 +18,10 @@ public class AuthService {
             return null;
         }
 
+        if (userLogin.getPassword() == null) {
+            return null;
+        }
+
         if (!userLogin.getPassword().equals("123456")) {
             return null;
         }

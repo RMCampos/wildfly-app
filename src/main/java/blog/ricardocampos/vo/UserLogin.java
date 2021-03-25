@@ -7,6 +7,15 @@ public class UserLogin implements Serializable {
     private String email;
     private String password;
 
+    public UserLogin() {
+        this(null, null);
+    }
+
+    public UserLogin(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+
     public String getEmail() {
         return email;
     }
